@@ -7,7 +7,7 @@ const rawArtworks = [
 ];
 const details = {{ site.data.artworks | jsonify }} || {};
 const artworks = rawArtworks
-  .filter(({ filename }) => /\.(avif|gif|jpe?g|png|webp)$/i.test(filename))
+  .filter(({ filename }) => /\.(avif|gif|jpe?g|png|webp|mp4|webm|mov)$/i.test(filename))
   .sort((a, b) => a.filename.localeCompare(b.filename, undefined, { numeric: true }))
   .map((work) => ({ ...work, ...details[work.filename], title: details[work.filename]?.title || titleFromFilename(work.filename) }));
 
@@ -36,6 +36,25 @@ function workUrl(work) {
   return {{ '/artwork/' | relative_url | jsonify }} + '?work=' + encodeURIComponent(work.filename);
 }
 
+function isVideo(work) {
+  return /\.(mp4|webm|mov)$/i.test(work.filename);
+}
+
+function workMedia(work, alt, preview = false) {
+  const media = document.createElement(isVideo(work) ? 'video' : 'img');
+  media.src = isVideo(work) && preview ? work.src + '#t=0.1' : work.src;
+  if (isVideo(work)) {
+    media.preload = 'metadata';
+    media.playsInline = true;
+    media.setAttribute('aria-label', alt);
+    if (preview) media.muted = true;
+    else media.controls = true;
+  } else {
+    media.alt = alt;
+  }
+  return media;
+}
+
 function showGallery() {
   const gallery = document.querySelector('#gallery-grid');
   document.querySelector('#work-count').textContent = artworks.length ? `(${String(artworks.length).padStart(2, '0')})` : '';
@@ -47,11 +66,15 @@ function showGallery() {
     link.setAttribute('aria-label', `View ${work.title}`);
     const frame = document.createElement('div');
     frame.className = 'work-image-wrap';
-    const image = document.createElement('img');
-    image.src = work.src;
-    image.alt = work.title;
-    image.loading = index < 3 ? 'eager' : 'lazy';
-    frame.append(image);
+    const media = workMedia(work, work.title, true);
+    if (!isVideo(work)) media.loading = index < 3 ? 'eager' : 'lazy';
+    frame.append(media);
+    if (isVideo(work)) {
+      const badge = document.createElement('span');
+      badge.className = 'video-badge';
+      badge.textContent = '▶ Video';
+      frame.append(badge);
+    }
     const caption = document.createElement('div');
     caption.className = 'work-caption';
     const title = document.createElement('span');
@@ -115,9 +138,7 @@ function showArtwork() {
   }
   const work = artworks[index];
   document.title = `${work.title} — Jay Damask`;
-  const image = document.querySelector('#artwork-image');
-  image.src = work.src;
-  image.alt = work.title;
+  document.querySelector('#artwork-media').replaceChildren(workMedia(work, work.title));
   document.querySelector('#artwork-title').textContent = work.title;
   document.querySelector('#artwork-number').textContent = `Work ${String(index + 1).padStart(2, '0')} / ${String(artworks.length).padStart(2, '0')}`;
   const description = document.querySelector('#artwork-description');

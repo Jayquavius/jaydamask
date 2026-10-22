@@ -28,11 +28,12 @@
 
       <section class="admin-workspace" id="editor-panel" hidden aria-labelledby="editor-heading">
         <div class="admin-topline"><div><p class="eyebrow">Portfolio editor</p><h1 id="editor-heading">Artwork details</h1></div><button type="button" class="text-button" id="logout-button">Log out</button></div>
-        <p class="admin-intro">Choose an image, add text, and save. New images placed in <code>art/</code> appear here after GitHub Pages rebuilds.</p>
+        <nav class="admin-tabs" aria-label="Editor pages"><a href="#details" id="details-tab">Edit details</a><a href="#upload" id="upload-tab">Upload files</a></nav>
+        <div id="details-page"><p class="admin-intro">Choose an artwork, add text, and save.</p>
         <div class="admin-layout">
           <div class="admin-list" id="admin-list" aria-label="Artwork list"></div>
           <form class="admin-form" id="artwork-form" hidden>
-            <div class="admin-selected"><img id="selected-image" alt=""><div><span class="field-hint">Editing</span><strong id="selected-filename"></strong><a id="view-work" target="_blank" rel="noopener noreferrer">View page ↗</a></div></div>
+            <div class="admin-selected"><div id="selected-media"></div><div><span class="field-hint">Editing</span><strong id="selected-filename"></strong><a id="view-work" target="_blank" rel="noopener noreferrer">View page ↗</a></div></div>
             <div class="field-grid"><div class="field"><label for="work-title">Title</label><input id="work-title" type="text" maxlength="150"></div><div class="field"><label for="work-year">Year</label><input id="work-year" type="text" maxlength="40"></div></div>
             <div class="field-grid"><div class="field"><label for="work-medium">Medium</label><input id="work-medium" type="text" maxlength="150" placeholder="Oil on canvas"></div><div class="field"><label for="work-dimensions">Dimensions</label><input id="work-dimensions" type="text" maxlength="100" placeholder="24 × 30 in"></div></div>
             <div class="field"><label for="work-body">Page text</label><p class="field-hint">Use the toolbar to format the text shown beside the image.</p>
@@ -45,8 +46,19 @@
             </div>
             <div class="admin-actions"><button class="primary-button" id="save-button" type="submit">Save and publish →</button><span class="form-message" id="save-message" role="status" aria-live="polite"></span></div>
           </form>
-          <div class="admin-no-images" id="admin-no-images" hidden><h2>No artwork images yet.</h2><p>Add image files to the <code>art/</code> folder in the repository. They will appear here after the site rebuilds.</p></div>
+          <div class="admin-no-images" id="admin-no-images" hidden><h2>No artwork yet.</h2><p><a href="#upload">Upload images or videos</a> to get started.</p></div>
         </div>
+        </div>
+        <section id="upload-page" class="upload-page" hidden aria-labelledby="upload-heading">
+          <p class="eyebrow">New work</p><h2 id="upload-heading">Upload to your portfolio.</h2>
+          <p class="admin-intro">Choose one or more images or videos. They will appear in the gallery after GitHub Pages rebuilds. MP4 video works best across browsers.</p>
+          <form id="upload-form">
+            <label class="upload-drop" for="upload-files"><span class="upload-plus" aria-hidden="true">+</span><strong>Choose images or videos</strong><span>PNG, JPG, GIF, WebP, AVIF, MP4, WebM, or MOV</span><input id="upload-files" type="file" accept=".png,.jpg,.jpeg,.gif,.webp,.avif,.mp4,.webm,.mov,image/*,video/mp4,video/webm,video/quicktime" multiple></label>
+            <p class="field-hint">Up to 90 MB per file. Larger videos need to be compressed before uploading.</p>
+            <ul id="upload-list" class="upload-list" aria-live="polite"></ul>
+            <div class="admin-actions"><button type="submit" class="primary-button" id="upload-button" disabled>Upload and publish →</button><span class="form-message" id="upload-message" role="status" aria-live="polite"></span></div>
+          </form>
+        </section>
       </section>
     </main>
     <footer class="site-footer"><span>© <span id="year"></span> Jay Damask</span><a href="{{ '/' | relative_url }}">View portfolio ↗</a></footer>
