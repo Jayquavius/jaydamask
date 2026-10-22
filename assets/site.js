@@ -11,6 +11,23 @@ const artworks = rawArtworks
   .sort((a, b) => a.filename.localeCompare(b.filename, undefined, { numeric: true }))
   .map((work) => ({ ...work, ...details[work.filename], title: details[work.filename]?.title || titleFromFilename(work.filename) }));
 
+async function loadLatestDetails() {
+  try {
+    const url = {{ '/assets/artworks.json' | relative_url | jsonify }} + '?v=' + Date.now();
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Artwork details returned ${response.status}`);
+    const latest = await response.json();
+    for (const work of artworks) {
+      const info = latest[work.filename] || {};
+      for (const key of ['title', 'year', 'medium', 'dimensions', 'body', 'description']) delete work[key];
+      Object.assign(work, info);
+      work.title = info.title || titleFromFilename(work.filename);
+    }
+  } catch (_) {
+    // The details embedded by Jekyll remain available if this request fails.
+  }
+}
+
 function titleFromFilename(filename) {
   return filename.replace(/\.[^.]+$/, '').replace(/^\d+[\s._-]*/, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Untitled';
 }
@@ -119,5 +136,5 @@ function showArtwork() {
 }
 
 document.querySelector('#year').textContent = new Date().getFullYear();
-if (document.body.dataset.page === 'home') showGallery();
-if (document.body.dataset.page === 'artwork') showArtwork();
+if (document.body.dataset.page === 'home') loadLatestDetails().then(showGallery);
+if (document.body.dataset.page === 'artwork') loadLatestDetails().then(showArtwork);

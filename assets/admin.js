@@ -4,6 +4,7 @@ let fileSha = '';
 let savedDetails = {};
 let selectedWork = null;
 let isDirty = false;
+let publicationCheck = 0;
 
 const loginPanel = document.querySelector('#login-panel');
 const editorPanel = document.querySelector('#editor-panel');
@@ -98,6 +99,29 @@ function escapeHtml(value) {
   return span.innerHTML;
 }
 
+async function waitForPublication(filename, expected, checkId) {
+  for (let attempt = 0; attempt < 40; attempt++) {
+    if (checkId !== publicationCheck) return;
+    try {
+      const response = await fetch(`/assets/artworks.json?v=${Date.now()}-${attempt}`, { cache: 'no-store' });
+      if (response.ok) {
+        const published = (await response.json())[filename] || {};
+        if (Object.entries(expected).every(([key, value]) => published[key] === value)) {
+          if (selectedWork?.filename === filename) {
+            document.querySelector('#view-work').href = workUrl(selectedWork) + '&updated=' + Date.now();
+            setMessage('#save-message', 'Published. Open “View page” to see the updated text.');
+          }
+          return;
+        }
+      }
+    } catch (_) { /* The site may still be rebuilding. */ }
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+  if (checkId === publicationCheck && selectedWork?.filename === filename) {
+    setMessage('#save-message', 'Saved to GitHub. The public site is still rebuilding; check the page shortly.');
+  }
+}
+
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   accessToken = document.querySelector('#access-token').value.trim();
@@ -124,6 +148,7 @@ loginForm.addEventListener('submit', async (event) => {
 });
 
 document.querySelector('#logout-button').addEventListener('click', () => {
+  publicationCheck++;
   accessToken = '';
   fileSha = '';
   savedDetails = {};
@@ -165,7 +190,8 @@ artworkForm.addEventListener('submit', async (event) => {
     savedDetails = nextDetails;
     isDirty = false;
     document.querySelector('.admin-work-item.is-selected span').textContent = nextDetails[filename].title;
-    setMessage('#save-message', 'Saved. The public page will update after GitHub Pages rebuilds.');
+    setMessage('#save-message', 'Saved to GitHub. Waiting for the public page to update…');
+    waitForPublication(filename, nextDetails[filename], ++publicationCheck);
   } catch (error) {
     const conflict = /409|sha|conflict/i.test(error.message);
     setMessage('#save-message', conflict ? 'This file changed on GitHub. Reload the editor and try again.' : `Save failed: ${error.message}`, true);
