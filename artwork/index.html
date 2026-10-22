@@ -1,0 +1,28 @@
+---
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f0e9"><meta name="description" content="Artwork by Jay Damask.">
+  <title>Artwork — Jay Damask</title>
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}"><script defer src="{{ '/assets/site.js' | relative_url }}"></script>
+</head>
+<body data-page="artwork">
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="wordmark" href="{{ '/' | relative_url }}" aria-label="Jay Damask, home">JAY DAMASK<span class="wordmark-dot">.</span></a>
+      <nav aria-label="Main navigation"><a class="nav-link" href="{{ '/' | relative_url }}">Work</a></nav>
+    </header>
+    <main class="artwork-main" id="artwork-main">
+      <a class="back-link" href="{{ '/' | relative_url }}#gallery"><span aria-hidden="true">←</span> Back to all work</a>
+      <div class="artwork-layout" id="artwork-layout" hidden>
+        <div class="artwork-image-wrap"><img id="artwork-image" alt=""></div>
+        <div class="artwork-info"><p class="eyebrow" id="artwork-number"></p><h1 id="artwork-title"></h1><div class="artwork-rule"></div><div class="artwork-description rich-text" id="artwork-description" hidden></div><dl class="artwork-facts" id="artwork-facts"></dl><div class="artwork-pager"><a id="previous-work" href="#">← Previous</a><a id="next-work" href="#">Next →</a></div></div>
+      </div>
+      <div class="missing-work" id="missing-work" hidden><h1>Artwork not found.</h1><p>This piece may have moved or been removed.</p><a href="{{ '/' | relative_url }}#gallery">Browse the gallery →</a></div>
+    </main>
+    <footer class="site-footer"><span>© <span id="year"></span> Jay Damask</span><a href="{{ '/' | relative_url }}">Back to work ↑</a></footer>
+  </div>
+</body>
+</html>

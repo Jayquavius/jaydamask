@@ -1,1 +1,32 @@
-hi, i'm Jay
+---
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f0e9"><meta name="description" content="An art portfolio by Jay Damask.">
+  <title>Jay Damask — Art</title>
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}"><script defer src="{{ '/assets/site.js' | relative_url }}"></script>
+</head>
+<body data-page="home">
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="wordmark" href="{{ '/' | relative_url }}" aria-label="Jay Damask, home">JAY DAMASK<span class="wordmark-dot">.</span></a>
+      <nav aria-label="Main navigation"><a class="nav-link is-current" href="{{ '/' | relative_url }}" aria-current="page">Work</a></nav>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-topline"><span>Independent artist portfolio</span><span>Selected work / ongoing</span></div>
+        <h1 id="page-title">A place for<br><em>the work.</em></h1>
+        <div class="intro-bottomline"><p>Art by Jay Damask. Explore the collection below.</p><a href="#gallery" class="scroll-link">View the gallery <span aria-hidden="true">↓</span></a></div>
+      </section>
+      <section class="gallery-section" id="gallery" aria-labelledby="gallery-title">
+        <div class="section-heading"><div><p class="eyebrow">The collection</p><h2 id="gallery-title">Works <span id="work-count"></span></h2></div><span class="section-note">Click a piece to see more</span></div>
+        <div class="gallery" id="gallery-grid"></div>
+        <div class="empty-state" id="empty-state" hidden><div class="empty-mark" aria-hidden="true">✳</div><h3>The gallery is taking shape.</h3><p>Artwork will appear here as images are added to the collection.</p></div>
+      </section>
+    </main>
+    <footer class="site-footer"><span>© <span id="year"></span> Jay Damask</span><a href="{{ '/' | relative_url }}">Back to top ↑</a></footer>
+  </div>
+</body>
+</html>

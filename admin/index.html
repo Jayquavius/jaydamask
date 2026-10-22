@@ -1,0 +1,55 @@
+---
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow"><meta name="referrer" content="no-referrer">
+  <title>Editor — Jay Damask</title>
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  <script defer src="{{ '/assets/site.js' | relative_url }}"></script>
+  <script defer src="{{ '/assets/admin.js' | relative_url }}"></script>
+</head>
+<body data-page="admin">
+  <div class="site-shell">
+    <header class="site-header"><a class="wordmark" href="{{ '/' | relative_url }}" aria-label="Jay Damask, home">JAY DAMASK<span class="wordmark-dot">.</span></a><span class="admin-label">Portfolio editor</span></header>
+    <main class="admin-main">
+      <section class="admin-login" id="login-panel" aria-labelledby="login-heading">
+        <p class="eyebrow">Private editing</p><h1 id="login-heading">Edit your work.</h1>
+        <p>Enter a GitHub access token for this repository. It stays in this browser tab and is sent only to GitHub when you load or save artwork details.</p>
+        <form id="login-form">
+          <label for="access-token">Access code</label>
+          <input id="access-token" type="password" required autocomplete="off" spellcheck="false" placeholder="GitHub fine-grained token">
+          <button type="submit" class="primary-button" id="login-button">Open editor →</button>
+        </form>
+        <p class="form-message" id="login-message" role="status" aria-live="polite"></p>
+        <p class="admin-help">Use a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained GitHub token</a> limited to this repository with <strong>Contents: Read and write</strong>. The page address is unlisted; the token protects saving.</p>
+      </section>
+
+      <section class="admin-workspace" id="editor-panel" hidden aria-labelledby="editor-heading">
+        <div class="admin-topline"><div><p class="eyebrow">Portfolio editor</p><h1 id="editor-heading">Artwork details</h1></div><button type="button" class="text-button" id="logout-button">Log out</button></div>
+        <p class="admin-intro">Choose an image, add text, and save. New images placed in <code>art/</code> appear here after GitHub Pages rebuilds.</p>
+        <div class="admin-layout">
+          <div class="admin-list" id="admin-list" aria-label="Artwork list"></div>
+          <form class="admin-form" id="artwork-form" hidden>
+            <div class="admin-selected"><img id="selected-image" alt=""><div><span class="field-hint">Editing</span><strong id="selected-filename"></strong><a id="view-work" target="_blank" rel="noopener noreferrer">View page ↗</a></div></div>
+            <div class="field-grid"><div class="field"><label for="work-title">Title</label><input id="work-title" type="text" maxlength="150"></div><div class="field"><label for="work-year">Year</label><input id="work-year" type="text" maxlength="40"></div></div>
+            <div class="field-grid"><div class="field"><label for="work-medium">Medium</label><input id="work-medium" type="text" maxlength="150" placeholder="Oil on canvas"></div><div class="field"><label for="work-dimensions">Dimensions</label><input id="work-dimensions" type="text" maxlength="100" placeholder="24 × 30 in"></div></div>
+            <div class="field"><label for="work-body">Page text</label><p class="field-hint">Use the toolbar to format the text shown beside the image.</p>
+              <div class="editor-toolbar" role="toolbar" aria-label="Text formatting">
+                <button type="button" data-command="bold" aria-label="Bold"><strong>B</strong></button><button type="button" data-command="italic" aria-label="Italic"><em>I</em></button>
+                <button type="button" data-command="formatBlock" data-value="p" aria-label="Paragraph">P</button><button type="button" data-command="formatBlock" data-value="h2" aria-label="Heading">H</button>
+                <button type="button" data-command="insertUnorderedList" aria-label="Bulleted list">• List</button><button type="button" data-command="createLink" aria-label="Add link">Link</button>
+              </div>
+              <div id="work-body" class="rich-editor rich-text" contenteditable="true" role="textbox" aria-label="Artwork page text" aria-multiline="true" data-placeholder="Write about this work…"></div>
+            </div>
+            <div class="admin-actions"><button class="primary-button" id="save-button" type="submit">Save and publish →</button><span class="form-message" id="save-message" role="status" aria-live="polite"></span></div>
+          </form>
+          <div class="admin-no-images" id="admin-no-images" hidden><h2>No artwork images yet.</h2><p>Add image files to the <code>art/</code> folder in the repository. They will appear here after the site rebuilds.</p></div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><span>© <span id="year"></span> Jay Damask</span><a href="{{ '/' | relative_url }}">View portfolio ↗</a></footer>
+  </div>
+</body>
+</html>
