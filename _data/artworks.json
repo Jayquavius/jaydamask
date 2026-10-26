@@ -1,16 +1,42 @@
 {
+  "Depth_Project_Jay_Damask.png": {
+    "selected": true
+  },
+  "HW5.png": {
+    "selected": true
+  },
+  "InkDemonMatcap.PNG": {
+    "selected": true
+  },
+  "InkDemonWireframe.PNG": {
+    "selected": true
+  },
+  "Myer.png": {
+    "selected": true
+  },
+  "Nemi.png": {
+    "selected": true
+  },
   "annotated-HW7F-ALTERED.png": {
     "title": "Lockdown!",
     "year": "2024",
     "medium": "Digital comic",
     "dimensions": "",
-    "body": "This is a comic I made for my summer course"
+    "body": "This is a comic I made for my summer course",
+    "selected": true
+  },
+  "annotated-HW8F2-ALTERED.png": {
+    "selected": true
+  },
+  "annotated-HW9F-ALTERED.png": {
+    "selected": true
   },
   "IMG_4936.jpeg": {
     "title": "Self portrait",
     "year": "2026",
     "medium": "Charcoal pencil",
     "dimensions": "",
-    "body": "Exploring light with pencils and shading"
+    "body": "Exploring light with pencils and shading",
+    "selected": true
   }
 }
