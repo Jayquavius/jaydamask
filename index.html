@@ -22,9 +22,9 @@
         <div class="intro-bottomline"><p>Art by Jay Damask. Explore the collection below.</p><a href="#gallery" class="scroll-link">View the gallery <span aria-hidden="true">↓</span></a></div>
       </section>
       <section class="gallery-section" id="gallery" aria-labelledby="gallery-title">
-        <div class="section-heading"><div><p class="eyebrow">The collection</p><h2 id="gallery-title">Works <span id="work-count"></span></h2></div><span class="section-note">Click a piece to see more</span></div>
+        <div class="section-heading"><div><p class="eyebrow">The collection</p><h2 id="gallery-title">Works <span id="work-count"></span></h2></div><label class="gallery-filter" for="selected-works-filter"><input id="selected-works-filter" type="checkbox" checked> Selected Works</label></div>
         <div class="gallery" id="gallery-grid"></div>
-        <div class="empty-state" id="empty-state" hidden><div class="empty-mark" aria-hidden="true">✳</div><h3>The gallery is taking shape.</h3><p>Artwork will appear here as images are added to the collection.</p></div>
+        <div class="empty-state" id="empty-state" hidden><div class="empty-mark" aria-hidden="true">✳</div><h3 id="empty-title">The gallery is taking shape.</h3><p id="empty-description">Artwork will appear here as images are added to the collection.</p></div>
       </section>
     </main>
     <footer class="site-footer"><span>© <span id="year"></span> Jay Damask</span><a href="{{ '/' | relative_url }}">Back to top ↑</a></footer>

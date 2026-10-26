@@ -85,6 +85,7 @@ function selectWork(work) {
   document.querySelector('#work-year').value = data.year || '';
   document.querySelector('#work-medium').value = data.medium || '';
   document.querySelector('#work-dimensions').value = data.dimensions || '';
+  document.querySelector('#work-selected').checked = data.selected !== false;
   bodyEditor.innerHTML = sanitizeRichHtml(data.body || (data.description ? `<p>${escapeHtml(data.description)}</p>` : ''));
   artworkForm.hidden = false;
   document.querySelectorAll('.admin-work-item').forEach((button) => {
@@ -340,6 +341,7 @@ artworkForm.addEventListener('submit', async (event) => {
     year: document.querySelector('#work-year').value.trim(),
     medium: document.querySelector('#work-medium').value.trim(),
     dimensions: document.querySelector('#work-dimensions').value.trim(),
+    selected: document.querySelector('#work-selected').checked,
     body: sanitizeRichHtml(bodyEditor.innerHTML)
   };
   try {

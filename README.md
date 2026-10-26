@@ -4,7 +4,7 @@ Open `/admin/#upload` on the published site to upload one or more images or vide
 
 You can also add those files directly to `art/`, then commit and push them to the GitHub Pages branch. The home page lists each file automatically after GitHub Pages rebuilds and links to its larger artwork view. Videos play with controls on their detail page. Files are ordered by filename, so prefixes like `01-`, `02-` set the order.
 
-Titles come from filenames by default (`01-blue-sky.jpg` becomes “blue sky”). To edit an artwork page in the browser, open `/admin/` on the published site. This page is unlinked and excluded from search indexes. Sign in with a [fine-grained GitHub personal access token](https://github.com/settings/personal-access-tokens/new) scoped only to `Jayquavius/jaydamask`, with **Contents: Read and write**. The site keeps the token in the browser tab's memory, never in site files or local storage. Choose a work, add its title, details, and formatted page text, then select **Save and publish**. The editor commits `_data/artworks.json` to GitHub; GitHub Pages updates after its next build. Reload the editor after an upload to see the new work in the editing list.
+Titles come from filenames by default (`01-blue-sky.jpg` becomes “blue sky”). To edit an artwork page in the browser, open `/admin/` on the published site. This page is unlinked and excluded from search indexes. Sign in with a [fine-grained GitHub personal access token](https://github.com/settings/personal-access-tokens/new) scoped only to `Jayquavius/jaydamask`, with **Contents: Read and write**. The site keeps the token in the browser tab's memory, never in site files or local storage. Choose a work, add its title, details, and formatted page text, and select **Save and publish**. All pieces are included in **Selected Works** by default; uncheck **Include in Selected Works** and save to exclude one from the default home gallery. Visitors can uncheck **Selected Works** on the home page to see the full collection. The editor commits `_data/artworks.json` to GitHub; GitHub Pages updates after its next build. Reload the editor after an upload to see the new work in the editing list.
 
 You can also edit `_data/artworks.json` directly. Entries are keyed by exact image filename:
 
@@ -15,6 +15,7 @@ You can also edit `_data/artworks.json` directly. Entries are keyed by exact ima
     "year": "2026",
     "medium": "Oil on canvas",
     "dimensions": "24 × 30 in",
+    "selected": true,
     "body": "<p>A note about the work.</p>"
   }
 }

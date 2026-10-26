@@ -19,7 +19,7 @@ async function loadLatestDetails() {
     const latest = await response.json();
     for (const work of artworks) {
       const info = latest[work.filename] || {};
-      for (const key of ['title', 'year', 'medium', 'dimensions', 'body', 'description']) delete work[key];
+      for (const key of ['title', 'year', 'medium', 'dimensions', 'body', 'description', 'selected']) delete work[key];
       Object.assign(work, info);
       work.title = info.title || titleFromFilename(work.filename);
     }
@@ -57,9 +57,16 @@ function workMedia(work, alt, preview = false) {
 
 function showGallery() {
   const gallery = document.querySelector('#gallery-grid');
-  document.querySelector('#work-count').textContent = artworks.length ? `(${String(artworks.length).padStart(2, '0')})` : '';
-  document.querySelector('#empty-state').hidden = artworks.length > 0;
-  artworks.forEach((work, index) => {
+  const selectedOnly = document.querySelector('#selected-works-filter').checked;
+  const visibleWorks = selectedOnly ? artworks.filter((work) => work.selected !== false) : artworks;
+  gallery.replaceChildren();
+  document.querySelector('#work-count').textContent = visibleWorks.length ? `(${String(visibleWorks.length).padStart(2, '0')})` : '';
+  document.querySelector('#empty-state').hidden = visibleWorks.length > 0;
+  if (!visibleWorks.length && artworks.length) {
+    document.querySelector('#empty-title').textContent = 'No selected works yet.';
+    document.querySelector('#empty-description').textContent = 'Uncheck Selected Works to see the full collection.';
+  }
+  visibleWorks.forEach((work, index) => {
     const link = document.createElement('a');
     link.className = 'work-card';
     link.href = workUrl(work);
@@ -80,7 +87,7 @@ function showGallery() {
     const title = document.createElement('span');
     title.textContent = work.title;
     const number = document.createElement('span');
-    number.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(artworks.length).padStart(2, '0');
+    number.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(visibleWorks.length).padStart(2, '0');
     caption.append(title, number);
     link.append(frame, caption);
     gallery.append(link);
@@ -157,5 +164,8 @@ function showArtwork() {
 }
 
 document.querySelector('#year').textContent = new Date().getFullYear();
-if (document.body.dataset.page === 'home') loadLatestDetails().then(showGallery);
+if (document.body.dataset.page === 'home') {
+  document.querySelector('#selected-works-filter').addEventListener('change', showGallery);
+  loadLatestDetails().then(showGallery);
+}
 if (document.body.dataset.page === 'artwork') loadLatestDetails().then(showArtwork);
