@@ -10,6 +10,18 @@ const artworks = rawArtworks
   .filter(({ filename }) => /\.(avif|gif|jpe?g|png|webp|mp4|webm|mov)$/i.test(filename))
   .sort((a, b) => a.filename.localeCompare(b.filename, undefined, { numeric: true }))
   .map((work) => ({ ...work, ...details[work.filename], title: details[work.filename]?.title || titleFromFilename(work.filename) }));
+const selectionStorageKey = 'jaydamask-selected-works';
+
+function recentSelectionOverrides() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(selectionStorageKey) || '{}');
+    return Object.fromEntries(Object.entries(saved).filter(([, value]) =>
+      typeof value?.selected === 'boolean' && Date.now() - value.savedAt < 10 * 60 * 1000
+    ));
+  } catch (_) {
+    return {};
+  }
+}
 
 async function loadLatestDetails() {
   try {
@@ -17,6 +29,13 @@ async function loadLatestDetails() {
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Artwork details returned ${response.status}`);
     const latest = await response.json();
+    if (document.body.dataset.page === 'home') {
+      const overrides = recentSelectionOverrides();
+      for (const [filename, value] of Object.entries(overrides)) {
+        if (latest[filename]?.selected === value.selected) delete overrides[filename];
+      }
+      try { localStorage.setItem(selectionStorageKey, JSON.stringify(overrides)); } catch (_) { /* Storage may be unavailable. */ }
+    }
     for (const work of artworks) {
       const info = latest[work.filename] || {};
       for (const key of ['title', 'year', 'medium', 'dimensions', 'body', 'description', 'selected']) delete work[key];
@@ -58,7 +77,10 @@ function workMedia(work, alt, preview = false) {
 function showGallery() {
   const gallery = document.querySelector('#gallery-grid');
   const selectedOnly = document.querySelector('#selected-works-filter').checked;
-  const visibleWorks = selectedOnly ? artworks.filter((work) => work.selected !== false) : artworks;
+  const overrides = recentSelectionOverrides();
+  const visibleWorks = selectedOnly ? artworks.filter((work) =>
+    (overrides[work.filename]?.selected ?? (work.selected !== false))
+  ) : artworks;
   gallery.replaceChildren();
   document.querySelector('#work-count').textContent = visibleWorks.length ? `(${String(visibleWorks.length).padStart(2, '0')})` : '';
   document.querySelector('#empty-state').hidden = visibleWorks.length > 0;
@@ -166,6 +188,9 @@ function showArtwork() {
 document.querySelector('#year').textContent = new Date().getFullYear();
 if (document.body.dataset.page === 'home') {
   document.querySelector('#selected-works-filter').addEventListener('change', showGallery);
+  window.addEventListener('storage', (event) => {
+    if (event.key === selectionStorageKey) showGallery();
+  });
   loadLatestDetails().then(showGallery);
 }
 if (document.body.dataset.page === 'artwork') loadLatestDetails().then(showArtwork);

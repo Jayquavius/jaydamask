@@ -4,6 +4,8 @@ let fileSha = '';
 let savedDetails = {};
 let selectedWork = null;
 let isDirty = false;
+let savingSelection = false;
+let savingDetails = false;
 let publicationCheck = 0;
 
 const loginPanel = document.querySelector('#login-panel');
@@ -74,6 +76,7 @@ function renderList() {
 }
 
 function selectWork(work) {
+  if (savingSelection || savingDetails) return;
   if (isDirty && !window.confirm('Discard unsaved changes to this artwork?')) return;
   selectedWork = work;
   isDirty = false;
@@ -100,7 +103,7 @@ function escapeHtml(value) {
   return span.innerHTML;
 }
 
-async function waitForPublication(filename, expected, checkId) {
+async function waitForPublication(filename, expected, checkId, selectionOnly = false) {
   for (let attempt = 0; attempt < 40; attempt++) {
     if (checkId !== publicationCheck) return;
     try {
@@ -109,8 +112,12 @@ async function waitForPublication(filename, expected, checkId) {
         const published = (await response.json())[filename] || {};
         if (Object.entries(expected).every(([key, value]) => published[key] === value)) {
           if (selectedWork?.filename === filename) {
-            document.querySelector('#view-work').href = workUrl(selectedWork) + '&updated=' + Date.now();
-            setMessage('#save-message', 'Published. Open “View page” to see the updated text.');
+            if (selectionOnly) {
+              setMessage('#save-message', 'Selection published. Refresh the home page to see it.');
+            } else {
+              document.querySelector('#view-work').href = workUrl(selectedWork) + '&updated=' + Date.now();
+              setMessage('#save-message', 'Published. Open “View page” to see the updated text.');
+            }
           }
           return;
         }
@@ -327,12 +334,59 @@ document.querySelector('#upload-form').addEventListener('submit', async (event) 
   }
 });
 
-artworkForm.addEventListener('input', () => { isDirty = true; });
+artworkForm.addEventListener('input', (event) => {
+  if (event.target.id !== 'work-selected') isDirty = true;
+});
+document.querySelector('#work-selected').addEventListener('change', async (event) => {
+  if (!selectedWork || !accessToken || savingSelection || savingDetails) return;
+  const checkbox = event.currentTarget;
+  const filename = selectedWork.filename;
+  const selected = checkbox.checked;
+  savingSelection = true;
+  checkbox.disabled = true;
+  document.querySelector('#save-button').disabled = true;
+  document.querySelector('#logout-button').disabled = true;
+  setMessage('#save-message', 'Saving selection to GitHub…');
+  const nextDetails = { ...savedDetails, [filename]: { ...savedDetails[filename], selected } };
+  try {
+    const result = await githubRequest(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `${selected ? 'Select' : 'Deselect'} ${filename} for the home gallery`,
+        content: encodeBase64Utf8(JSON.stringify(nextDetails, null, 2) + '\n'),
+        sha: fileSha
+      })
+    });
+    fileSha = result.content.sha;
+    savedDetails = nextDetails;
+    try {
+      const key = 'jaydamask-selected-works';
+      const overrides = JSON.parse(localStorage.getItem(key) || '{}');
+      overrides[filename] = { selected, savedAt: Date.now() };
+      localStorage.setItem(key, JSON.stringify(overrides));
+    } catch (_) { /* The selection is still saved on GitHub if storage is unavailable. */ }
+    setMessage('#save-message', 'Selection saved. Waiting for the home page to update…');
+    waitForPublication(filename, { selected }, ++publicationCheck, true);
+  } catch (error) {
+    checkbox.checked = savedDetails[filename]?.selected !== false;
+    const conflict = /409|sha|conflict/i.test(error.message);
+    setMessage('#save-message', conflict ? 'This file changed on GitHub. Reload the editor and try again.' : `Selection save failed: ${error.message}`, true);
+  } finally {
+    savingSelection = false;
+    checkbox.disabled = false;
+    document.querySelector('#save-button').disabled = false;
+    document.querySelector('#logout-button').disabled = false;
+  }
+});
 artworkForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!selectedWork || !accessToken) return;
+  if (!selectedWork || !accessToken || savingSelection || savingDetails) return;
+  savingDetails = true;
   const button = document.querySelector('#save-button');
   button.disabled = true;
+  document.querySelector('#work-selected').disabled = true;
+  document.querySelector('#logout-button').disabled = true;
   setMessage('#save-message', 'Saving to GitHub…');
   const filename = selectedWork.filename;
   const nextDetails = { ...savedDetails };
@@ -364,7 +418,10 @@ artworkForm.addEventListener('submit', async (event) => {
     const conflict = /409|sha|conflict/i.test(error.message);
     setMessage('#save-message', conflict ? 'This file changed on GitHub. Reload the editor and try again.' : `Save failed: ${error.message}`, true);
   } finally {
+    savingDetails = false;
     button.disabled = false;
+    document.querySelector('#work-selected').disabled = false;
+    document.querySelector('#logout-button').disabled = false;
   }
 });
 
