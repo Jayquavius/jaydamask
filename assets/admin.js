@@ -6,6 +6,7 @@ let selectedWork = null;
 let isDirty = false;
 let savingSelection = false;
 let savingDetails = false;
+let deletingWork = false;
 let publicationCheck = 0;
 
 const loginPanel = document.querySelector('#login-panel');
@@ -76,7 +77,7 @@ function renderList() {
 }
 
 function selectWork(work) {
-  if (savingSelection || savingDetails) return;
+  if (savingSelection || savingDetails || deletingWork) return;
   if (isDirty && !window.confirm('Discard unsaved changes to this artwork?')) return;
   selectedWork = work;
   isDirty = false;
@@ -157,7 +158,7 @@ loginForm.addEventListener('submit', async (event) => {
 });
 
 document.querySelector('#logout-button').addEventListener('click', () => {
-  if (uploading) return;
+  if (uploading || deletingWork) return;
   publicationCheck++;
   accessToken = '';
   fileSha = '';
@@ -272,7 +273,7 @@ async function waitForUploadedFiles(filenames) {
 
 document.querySelector('#upload-form').addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!accessToken || !uploadFiles.length || uploading) return;
+  if (!accessToken || !uploadFiles.length || uploading || deletingWork) return;
   uploading = true;
   const files = [...uploadFiles];
   uploadInput.disabled = true;
@@ -338,7 +339,7 @@ artworkForm.addEventListener('input', (event) => {
   if (event.target.id !== 'work-selected') isDirty = true;
 });
 document.querySelector('#work-selected').addEventListener('change', async (event) => {
-  if (!selectedWork || !accessToken || savingSelection || savingDetails) return;
+  if (!selectedWork || !accessToken || savingSelection || savingDetails || deletingWork) return;
   const checkbox = event.currentTarget;
   const filename = selectedWork.filename;
   const selected = checkbox.checked;
@@ -381,7 +382,7 @@ document.querySelector('#work-selected').addEventListener('change', async (event
 });
 artworkForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!selectedWork || !accessToken || savingSelection || savingDetails) return;
+  if (!selectedWork || !accessToken || savingSelection || savingDetails || deletingWork) return;
   savingDetails = true;
   const button = document.querySelector('#save-button');
   button.disabled = true;
@@ -422,6 +423,85 @@ artworkForm.addEventListener('submit', async (event) => {
     button.disabled = false;
     document.querySelector('#work-selected').disabled = false;
     document.querySelector('#logout-button').disabled = false;
+  }
+});
+
+document.querySelector('#delete-button').addEventListener('click', async () => {
+  if (!selectedWork || !accessToken || savingSelection || savingDetails || uploading || deletingWork) return;
+  const filename = selectedWork.filename;
+  if (!window.confirm(`Delete “${savedDetails[filename]?.title || titleFromFilename(filename)}” (${filename}) from the portfolio? This removes the media file and its details from the current site. Earlier versions remain in Git history.`)) return;
+
+  deletingWork = true;
+  const deleteButton = document.querySelector('#delete-button');
+  const saveButton = document.querySelector('#save-button');
+  const selectedCheckbox = document.querySelector('#work-selected');
+  const logoutButton = document.querySelector('#logout-button');
+  deleteButton.disabled = true;
+  saveButton.disabled = true;
+  selectedCheckbox.disabled = true;
+  logoutButton.disabled = true;
+  setMessage('#delete-message', 'Deleting from GitHub…');
+
+  const base = 'https://api.github.com/repos/Jayquavius/jaydamask';
+  try {
+    const ref = await githubRequest(`${base}/git/ref/heads/main`);
+    const commit = await githubRequest(`${base}/git/commits/${ref.object.sha}`);
+    const currentTree = await githubRequest(`${base}/git/trees/${commit.tree.sha}?recursive=1`);
+    if (currentTree.truncated) throw new Error('The repository file list is incomplete. Reload and try again.');
+    const mediaPath = `art/${filename}`;
+    if (!currentTree.tree.some((item) => item.path === mediaPath && item.type === 'blob')) {
+      throw new Error('This artwork file is no longer in the repository. Reload the editor.');
+    }
+    const detailsFile = currentTree.tree.find((item) => item.path === '_data/artworks.json');
+    if (detailsFile?.sha !== fileSha) {
+      throw new Error('Artwork details changed on GitHub. Reload the editor and try again.');
+    }
+
+    const nextDetails = { ...savedDetails };
+    delete nextDetails[filename];
+    const detailsBlob = await githubRequest(`${base}/git/blobs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: encodeBase64Utf8(JSON.stringify(nextDetails, null, 2) + '\n'), encoding: 'base64' })
+    });
+    const nextTree = await githubRequest(`${base}/git/trees`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base_tree: commit.tree.sha, tree: [
+        { path: mediaPath, mode: '100644', type: 'blob', sha: null },
+        { path: '_data/artworks.json', mode: '100644', type: 'blob', sha: detailsBlob.sha }
+      ] })
+    });
+    const nextCommit = await githubRequest(`${base}/git/commits`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `Delete portfolio work ${filename}`, tree: nextTree.sha, parents: [ref.object.sha] })
+    });
+    await githubRequest(`${base}/git/refs/heads/main`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sha: nextCommit.sha, force: false })
+    });
+
+    fileSha = detailsBlob.sha;
+    savedDetails = nextDetails;
+    const index = artworks.findIndex((work) => work.filename === filename);
+    if (index !== -1) artworks.splice(index, 1);
+    publicationCheck++;
+    selectedWork = null;
+    isDirty = false;
+    deletingWork = false;
+    artworkForm.hidden = true;
+    renderList();
+    setMessage('#delete-message', `Deleted ${filename} from GitHub. The public gallery will update after GitHub Pages rebuilds.`);
+  } catch (error) {
+    setMessage('#delete-message', `Delete failed: ${error.message}`, true);
+  } finally {
+    deletingWork = false;
+    deleteButton.disabled = false;
+    saveButton.disabled = false;
+    selectedCheckbox.disabled = false;
+    logoutButton.disabled = false;
   }
 });
 

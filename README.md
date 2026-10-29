@@ -21,4 +21,6 @@ You can also edit `_data/artworks.json` directly. Entries are keyed by exact ima
 }
 ```
 
+To remove a piece, select it in `/admin/` and choose **Delete this work**. After confirmation, the editor removes the media file and its details in one GitHub commit. It disappears from the public gallery after GitHub Pages rebuilds. Earlier versions remain in Git history.
+
 The `/admin/` address is only unlisted. GitHub checks the token when saving; do not put a password or token into this public repository. Use the editor on the HTTPS site, and revoke the token in GitHub settings if it is lost.

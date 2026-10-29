@@ -46,10 +46,11 @@
               </div>
               <div id="work-body" class="rich-editor rich-text" contenteditable="true" role="textbox" aria-label="Artwork page text" aria-multiline="true" data-placeholder="Write about this work…"></div>
             </div>
-            <div class="admin-actions"><button class="primary-button" id="save-button" type="submit">Save and publish →</button><span class="form-message" id="save-message" role="status" aria-live="polite"></span></div>
+            <div class="admin-actions"><button class="primary-button" id="save-button" type="submit">Save and publish →</button><button class="delete-button" id="delete-button" type="button">Delete this work</button><span class="form-message" id="save-message" role="status" aria-live="polite"></span></div>
           </form>
           <div class="admin-no-images" id="admin-no-images" hidden><h2>No artwork yet.</h2><p><a href="#upload">Upload images or videos</a> to get started.</p></div>
         </div>
+        <p class="form-message" id="delete-message" role="status" aria-live="polite"></p>
         </div>
         <section id="upload-page" class="upload-page" hidden aria-labelledby="upload-heading">
           <p class="eyebrow">New work</p><h2 id="upload-heading">Upload to your portfolio.</h2>
